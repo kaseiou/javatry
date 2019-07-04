@@ -15,13 +15,27 @@
  */
 package org.docksidestage.javatry.colorbox;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAccessor;
+import java.util.List;
+import java.util.Set;
+
+import org.docksidestage.bizfw.colorbox.ColorBox;
+import org.docksidestage.bizfw.colorbox.space.BoxSpace;
+import org.docksidestage.bizfw.colorbox.space.DoorBoxSpace;
+import org.docksidestage.bizfw.colorbox.yours.YourPrivateRoom;
 import org.docksidestage.unit.PlainTestCase;
 
 /**
  * The test of Date with color-box. <br>
  * Show answer by log() for question of javadoc.
  * @author jflute
- * @author your_name_here
+ * @author Kasei Ou
  */
 public class Step14DateTest extends PlainTestCase {
 
@@ -33,6 +47,17 @@ public class Step14DateTest extends PlainTestCase {
      * (カラーボックスに入っている日付をスラッシュ区切り (e.g. 2019/04/24) のフォーマットしたら？)
      */
     public void test_formatDate() {
+        final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof TemporalAccessor) {
+                    TemporalAccessor date = (TemporalAccessor) content;
+                    log(formatter.format(date));
+                }
+            }
+        }
     }
 
     /**
@@ -40,6 +65,30 @@ public class Step14DateTest extends PlainTestCase {
      * (yellowのカラーボックスに入っているSetの中のスラッシュ区切り (e.g. 2019/04/24) の日付文字列をLocalDateに変換してtoString()したら？)
      */
     public void test_parseDate() {
+        final String targetColorString = "yellow";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            if (colorBox.getColor().getColorName().equals(targetColorString)) {
+                for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                    Object content = boxSpace.getContent();
+                    if (content instanceof Set) {
+                        Set set = (Set) content;
+                        for (Object object : set) {
+                            if (object instanceof String) {
+                                String dateString = (String) object;
+                                try {
+                                    log(dateString);
+                                    log(formatter.parse(dateString).toString());
+                                } catch (DateTimeParseException ex) {
+                                    log(dateString + " can not be parsed!");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -47,6 +96,27 @@ public class Step14DateTest extends PlainTestCase {
      * (カラーボックスに入っている日付の月を全て足したら？)
      */
     public void test_sumMonth() {
+        int sum = 0;
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof TemporalAccessor) {
+                    LocalDate date = null;
+                    if (content instanceof LocalDate) {
+                        date = (LocalDate) content;
+                    } else if (content instanceof LocalDateTime) {
+                        date = ((LocalDateTime) content).toLocalDate();
+                    } else {
+                        log("Not processed type!");
+                    }
+                    if (null != date) {
+                        sum += date.getMonthValue();
+                    }
+                }
+            }
+        }
+        log(sum);
     }
 
     /**
@@ -54,6 +124,29 @@ public class Step14DateTest extends PlainTestCase {
      * (カラーボックスに入っている二番目に見つかる日付に3日進めると何曜日？)
      */
     public void test_plusDays_weekOfDay() {
+        int count = 0;
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof TemporalAccessor) {
+                    count += 1;
+                    LocalDate date = null;
+                    if (content instanceof LocalDate) {
+                        date = (LocalDate) content;
+                    } else if (content instanceof LocalDateTime) {
+                        date = ((LocalDateTime) content).toLocalDate();
+                    } else {
+                        log("Not processed type!");
+                    }
+                    if (null != date && 2 == count) {
+                        date = date.plusDays(3);
+                        log(date.getDayOfWeek());
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     // ===================================================================================
@@ -64,6 +157,30 @@ public class Step14DateTest extends PlainTestCase {
      * (yellowのカラーボックスに入っている二つの日付は何日離れている？)
      */
     public void test_diffDay() {
+        LocalDateTime preDateTime = null;
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof TemporalAccessor) {
+                    LocalDateTime dateTime = null;
+                    if (content instanceof LocalDate) {
+                        dateTime = LocalDateTime.of((LocalDate) content, LocalTime.MIN);
+                    } else if (content instanceof LocalDateTime) {
+                        dateTime = (LocalDateTime) content;
+                    } else {
+                        log("Not processed type!");
+                    }
+                    if (null == preDateTime) {
+                        preDateTime = dateTime;
+                        continue;
+                    }
+                    Duration duration = Duration.between(dateTime, preDateTime);
+                    log(duration.toDays());
+                    return;
+                }
+            }
+        }
     }
 
     /**
@@ -75,6 +192,7 @@ public class Step14DateTest extends PlainTestCase {
      * redのカラーボックスに入っているLong型を日数として足して、カラーボックスに入っているリストの中のBigDecimalの整数値が3の小数点第一位の数を日数として引いた日付は？)
      */
     public void test_birthdate() {
+        log("勘弁してください！（笑）");
     }
 
     /**
@@ -82,5 +200,19 @@ public class Step14DateTest extends PlainTestCase {
      * (カラーボックスに入っているLocalTimeの秒は？)
      */
     public void test_beReader() {
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                if (boxSpace instanceof DoorBoxSpace) {
+                    DoorBoxSpace doorBoxSpace = (DoorBoxSpace) boxSpace;
+                    doorBoxSpace.openTheDoor();
+                    Object content = boxSpace.getContent();
+                    if (content instanceof LocalTime) {
+                        LocalTime time = (LocalTime) content;
+                        log(time.getSecond());
+                    }
+                }
+            }
+        }
     }
 }

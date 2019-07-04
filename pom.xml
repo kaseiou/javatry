@@ -200,6 +200,14 @@
 					</archive>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>9</source>
+					<target>9</target>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -271,6 +279,13 @@
 		    <groupId>org.apache.tomcat</groupId>
 		    <artifactId>tomcat-jasper</artifactId>
 		    <version>9.0.19</version> <!-- should be same as Tomcat dependency of TomcatBoot -->
+		</dependency>
+
+		<dependency>
+			<groupId>org.javatuples</groupId>
+			<artifactId>javatuples</artifactId>
+			<version>1.1</version>
+			<scope>compile</scope>
 		</dependency>
  
 		<!-- = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = -->

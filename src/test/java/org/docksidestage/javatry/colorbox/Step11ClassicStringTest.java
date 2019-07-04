@@ -15,11 +15,17 @@
  */
 package org.docksidestage.javatry.colorbox;
 
-import java.util.List;
+import java.io.File;
+import java.util.*;
 
 import org.docksidestage.bizfw.colorbox.ColorBox;
 import org.docksidestage.bizfw.colorbox.color.BoxColor;
+import org.docksidestage.bizfw.colorbox.impl.StandardColorBox;
+import org.docksidestage.bizfw.colorbox.space.BoxSpace;
 import org.docksidestage.bizfw.colorbox.yours.YourPrivateRoom;
+import org.docksidestage.bizfw.colorbox.yours.YourPrivateRoom.DevilBox;
+import org.docksidestage.bizfw.colorbox.yours.YourPrivateRoom.DevilBoxTextNotFoundException;
+import org.docksidestage.bizfw.colorbox.yours.YourPrivateRoom.SecretBox;
 import org.docksidestage.unit.PlainTestCase;
 
 /**
@@ -31,7 +37,7 @@ import org.docksidestage.unit.PlainTestCase;
  * o don't fix the YourPrivateRoom class and color-box classes
  * </pre>
  * @author jflute
- * @author your_name_here
+ * @author Kasei Ou
  */
 public class Step11ClassicStringTest extends PlainTestCase {
 
@@ -60,6 +66,25 @@ public class Step11ClassicStringTest extends PlainTestCase {
      * (カラーボックスに入ってる文字列の中で、一番長い文字列は？)
      */
     public void test_length_findMax() {
+        int maxLength = -1;
+        String maxLengthString = null;
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof String) {
+                    String contentString = (String) content;
+                    int currentLength = contentString.length();
+                    if (currentLength > maxLength) {
+                        maxLength = currentLength;
+                        maxLengthString = contentString;
+                    }
+                }
+            }
+        }
+        if (maxLength >= 0) {
+            log(maxLengthString, maxLength);
+        }
     }
 
     /**
@@ -67,13 +92,60 @@ public class Step11ClassicStringTest extends PlainTestCase {
      * (カラーボックスに入ってる文字列の中で、一番長いものと短いものの差は何文字？)
      */
     public void test_length_findMaxMinDiff() {
+        int maxLength = -1;
+        int minLength = Integer.MAX_VALUE;
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof String) {
+                    String contentString = (String) content;
+                    int currentLength = contentString.length();
+                    if (currentLength > maxLength) {
+                        maxLength = currentLength;
+                    }
+                    if (currentLength < minLength) {
+                        minLength = currentLength;
+                    }
+                }
+            }
+        }
+        if (maxLength >= minLength) {
+            log(maxLength - minLength, maxLength, minLength);
+        }
     }
 
     /**
-     * Which value (toString() if non-string) has second-max legnth in color-boxes? (without sort) <br>
+     * Which value (toString() if non-string) has second-max legnth in color-boxes? (without sort)<br>
      * (カラーボックスに入ってる値 (文字列以外はtoString()) の中で、二番目に長い文字列は？ (ソートなしで))
      */
     public void test_length_findSecondMax() {
+        int maxLength = -1;
+        int subMaxLength = -1;
+        String maxString = null;
+        String subMaxString = null;
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (null != content) {
+                    String contentString = content.toString();
+                    int currentLength = contentString.length();
+                    if (currentLength > maxLength) {
+                        subMaxLength = maxLength;
+                        subMaxString = maxString;
+                        maxLength = currentLength;
+                        maxString = contentString;
+                    } else if (currentLength > subMaxLength) {
+                        subMaxLength = currentLength;
+                        subMaxString = contentString;
+                    }
+                }
+            }
+        }
+        if (null != subMaxString) {
+            log(subMaxString, subMaxLength);
+        }
     }
 
     /**
@@ -81,6 +153,18 @@ public class Step11ClassicStringTest extends PlainTestCase {
      * (カラーボックスに入ってる文字列の長さの合計は？)
      */
     public void test_length_calculateLengthSum() {
+        int sumOfLength = 0;
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof String) {
+                    String contentString = (String) content;
+                    sumOfLength += contentString.length();
+                }
+            }
+        }
+        log(sumOfLength);
     }
 
     /**
@@ -88,6 +172,26 @@ public class Step11ClassicStringTest extends PlainTestCase {
      * (カラーボックスの中で、色の名前が一番長いものは？)
      */
     public void test_length_findMaxColorSize() {
+        int maxLength = -1;
+        List<String> maxLengthStrings = new ArrayList<>();
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            String colorName = colorBox.getColor().getColorName();
+            int currentLength = colorName.length();
+            if (currentLength > maxLength) {
+                maxLengthStrings.clear();
+                maxLengthStrings.add(colorName);
+                maxLength = currentLength;
+            } else if (currentLength == maxLength) {
+                maxLengthStrings.add(colorName);
+            }
+        }
+        if (maxLength >= 0) {
+            log(maxLength);
+            for (String str : maxLengthStrings) {
+                log(str);
+            }
+        }
     }
 
     // ===================================================================================
@@ -98,6 +202,24 @@ public class Step11ClassicStringTest extends PlainTestCase {
      * ("Water" で始まる文字列をしまっているカラーボックスの色は？)
      */
     public void test_startsWith_findFirstWord() {
+        final String prefix = "Water";
+        List<String> answerList = new ArrayList<>();
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof String) {
+                    String contentString = (String) content;
+                    if (contentString.startsWith(prefix)) {
+                        answerList.add(colorBox.getColor().getColorName());
+                        break;
+                    }
+                }
+            }
+        }
+        for (String str : answerList) {
+            log(str);
+        }
     }
 
     /**
@@ -105,23 +227,71 @@ public class Step11ClassicStringTest extends PlainTestCase {
      * ("front" で終わる文字列をしまっているカラーボックスの色は？)
      */
     public void test_endsWith_findLastWord() {
+        final String suffix = "front";
+        List<String> answerList = new ArrayList<>();
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof String) {
+                    String contentString = (String) content;
+                    if (contentString.endsWith(suffix)) {
+                        answerList.add(colorBox.getColor().getColorName());
+                        break;
+                    }
+                }
+            }
+        }
+        for (String str : answerList) {
+            log(str);
+        }
     }
 
     // ===================================================================================
     //                                                            indexOf(), lastIndexOf()
     //                                                            ========================
     /**
-     * What number character is starting with first "front" of string ending with "front" in color-boxes? <br>
-     * (カラーボックスに入ってる "front" で終わる文字列で、最初の "front" は何文字目から始まる？)
+     * What number character is starting with "front" of string ending with "front" in color-boxes? <br>
+     * (あなたのカラーボックスに入ってる "front" で終わる文字列で、"front" は何文字目から始まる？)
      */
     public void test_indexOf_findIndex() {
+        final String suffix = "front";
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof String) {
+                    String contentString = (String) content;
+                    if (contentString.endsWith(suffix)) {
+                        int answer = contentString.lastIndexOf(suffix) + 1;
+                        log(answer);
+                    }
+                }
+            }
+        }
     }
 
     /**
      * What number character is starting with the late "ど" of string containing plural "ど"s in color-boxes? (e.g. "どんどん" => 3) <br>
-     * (カラーボックスに入ってる「ど」を二つ以上含む文字列で、最後の「ど」は何文字目から始まる？ (e.g. "どんどん" => 3))
+     * (あなたのカラーボックスに入ってる「ど」を二つ以上含む文字列で、最後の「ど」は何文字目から始まる？ (e.g. "どんどん" => 3))
      */
     public void test_lastIndexOf_findIndex() {
+        final String pattern = "ど";
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof String) {
+                    String contentString = (String) content;
+                    int firstIndex = contentString.indexOf(pattern);
+                    int lastIndex = contentString.lastIndexOf(pattern);
+                    if (firstIndex != lastIndex) {
+                        int answer = lastIndex + 1;
+                        log(answer);
+                    }
+                }
+            }
+        }
     }
 
     // ===================================================================================
@@ -132,6 +302,20 @@ public class Step11ClassicStringTest extends PlainTestCase {
      * (カラーボックスに入ってる "front" で終わる文字列の最初の一文字は？)
      */
     public void test_substring_findFirstChar() {
+        final String suffix = "front";
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof String) {
+                    String contentString = (String) content;
+                    if (contentString.endsWith(suffix)) {
+                        String answer = contentString.substring(0, 1);
+                        log(answer);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -139,6 +323,21 @@ public class Step11ClassicStringTest extends PlainTestCase {
      * (カラーボックスに入ってる "Water" で始まる文字列の最後の一文字は？)
      */
     public void test_substring_findLastChar() {
+        final String prefix = "Water";
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof String) {
+                    String contentString = (String) content;
+                    if (contentString.startsWith(prefix)) {
+                        int length = contentString.length();
+                        String answer = contentString.substring(length - 1, length);
+                        log(answer);
+                    }
+                }
+            }
+        }
     }
 
     // ===================================================================================
@@ -149,6 +348,26 @@ public class Step11ClassicStringTest extends PlainTestCase {
      * (カラーボックスに入ってる "o" (おー) を含んだ文字列から "o" を全て除去したら何文字？)
      */
     public void test_replace_remove_o() {
+        final char key = 'o';
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof String) {
+                    int count = 0;
+                    String contentString = (String) content;
+                    for (int i = 0; i < contentString.length(); i++) {
+                        if (key == contentString.charAt(i)) {
+                            count += 1;
+                        }
+                    }
+                    if (count > 0) {
+                        int answer = contentString.length() - count;
+                        log(answer);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -156,6 +375,17 @@ public class Step11ClassicStringTest extends PlainTestCase {
      * カラーボックスに入ってる java.io.File のパス文字列のファイルセパレーターの "/" を、Windowsのファイルセパレーターに置き換えた文字列は？
      */
     public void test_replace_fileseparator() {
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof File) {
+                    File contentFile = (File) content;
+                    String answerString = contentFile.getPath().replaceAll("/", "\\\\");
+                    log(answerString);
+                }
+            }
+        }
     }
 
     // ===================================================================================
@@ -166,6 +396,26 @@ public class Step11ClassicStringTest extends PlainTestCase {
      * (カラーボックスの中に入っているDevilBoxクラスのtextの長さの合計は？)
      */
     public void test_welcomeToDevil() {
+        int sum = 0;
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof DevilBox) {
+                    DevilBox devilBox = (DevilBox) content;
+                    devilBox.wakeUp();
+                    devilBox.allowMe();
+                    devilBox.open();
+                    try {
+                        String text = devilBox.getText();
+                        sum += text.length();
+                    } catch (DevilBoxTextNotFoundException ex) {
+                        log("Devil Box Text Not Found!");
+                    }
+                }
+            }
+        }
+        log(sum);
     }
 
     // ===================================================================================
@@ -176,6 +426,17 @@ public class Step11ClassicStringTest extends PlainTestCase {
      * (カラーボックスの中に入っている java.util.Map を "map:{ key = value ; key = value ; ... }" という形式で表示すると？)
      */
     public void test_showMap_flat() {
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof Map) {
+                    Map contentMap = (Map) content;
+                    String mapString = convertMap2String(contentMap, false);
+                    log(mapString);
+                }
+            }
+        }
     }
 
     /**
@@ -183,6 +444,17 @@ public class Step11ClassicStringTest extends PlainTestCase {
      * (カラーボックスの中に入っている java.util.Map を "map:{ key = value ; key = map:{ key = value ; ... } ; ... }" という形式で表示すると？)
      */
     public void test_showMap_nested() {
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof Map) {
+                    Map contentMap = (Map) content;
+                    String mapString = convertMap2String(contentMap, true);
+                    log(mapString);
+                }
+            }
+        }
     }
 
     // ===================================================================================
@@ -193,6 +465,21 @@ public class Step11ClassicStringTest extends PlainTestCase {
      * (whiteのカラーボックスのupperスペースに入っているSecretBoxクラスのtextをMapに変換してtoString()すると？)
      */
     public void test_parseMap_flat() {
+        final String targetColorString = "white";
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            if (colorBox.getColor().getColorName().equals(targetColorString) && colorBox instanceof StandardColorBox) {
+                StandardColorBox standardColorBox = (StandardColorBox) colorBox;
+                Object object = standardColorBox.getUpperSpace().getContent();
+                if (object instanceof SecretBox) {
+                    SecretBox secretBox = (SecretBox) object;
+                    String text = secretBox.getText();
+                    Map map = parseString2Map(text, false);
+                    log(text);
+                    log(map.toString());
+                }
+            }
+        }
     }
 
     /**
@@ -200,5 +487,104 @@ public class Step11ClassicStringTest extends PlainTestCase {
      * (whiteのカラーボックスのmiddleおよびlowerスペースに入っているSecretBoxクラスのtextをMapに変換してtoString()すると？)
      */
     public void test_parseMap_nested() {
+        final String targetColorString = "white";
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            if (colorBox.getColor().getColorName().equals(targetColorString) && colorBox instanceof StandardColorBox) {
+                StandardColorBox standardColorBox = (StandardColorBox) colorBox;
+                Object middleObject = standardColorBox.getMiddleSpace().getContent();
+                Object lowerObject = standardColorBox.getLowerSpace().getContent();
+                Map<String, Object> objectMap = new HashMap<>();
+                objectMap.put("middle", middleObject);
+                objectMap.put("lower", lowerObject);
+                for (Map.Entry<String, Object> entry : objectMap.entrySet()) {
+                    if (entry.getValue() instanceof SecretBox) {
+                        SecretBox secretBox = (SecretBox) entry.getValue();
+                        String text = secretBox.getText();
+                        Map map = parseString2Map(text, true);
+                        log(entry.getKey());
+                        log(text);
+                        log(map.toString());
+                    }
+                }
+            }
+        }
+    }
+
+    private String convertMap2String(Map map, boolean isNested) {
+        StringBuilder mapString = new StringBuilder();
+        Set keySet = map.keySet();
+        int length = keySet.size();
+        int index = 0;
+        mapString.append("map:{");
+        for (Object key : keySet) {
+            Object value = map.get(key);
+            if (isNested && value instanceof Map) {
+                mapString.append(" ").append(key).append(" = ").append(convertMap2String((Map) value, true)).append(" ");
+            } else {
+                mapString.append(" ").append(key).append(" = ").append(value).append(" ");
+            }
+            if (index < length - 1) {
+                mapString.append(";");
+            }
+            index++;
+        }
+        mapString.append("}");
+        return mapString.toString();
+    }
+
+    private Map<String, Object> parseString2Map(String text, boolean isNested) {
+        Map<String, Object> map = new HashMap<>();
+        LinkedList<String> keyList = new LinkedList<>();
+        LinkedList<Object> valueList = new LinkedList<>();
+        int pos = 0;
+        boolean innerFlag = false;
+        int nestedCount = 0;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            switch (c) {
+            case '{':
+                if (innerFlag) {
+                    nestedCount += 1;
+                } else {
+                    innerFlag = true;
+                    pos = i + 2;
+                }
+                break;
+            case '}':
+                if (nestedCount > 0) {
+                    nestedCount -= 1;
+                } else if (innerFlag) {
+                    if (isNested && '}' == text.charAt(i - 2)) {
+                        valueList.add(parseString2Map(text.substring(pos, i - 1), true));
+                    } else {
+                        valueList.add(text.substring(pos, i - 1));
+                    }
+                }
+                break;
+            case ';':
+                if (innerFlag && 0 == nestedCount) {
+                    if (isNested && '}' == text.charAt(i - 2)) {
+                        valueList.add(parseString2Map(text.substring(pos, i - 1), true));
+                    } else {
+                        valueList.add(text.substring(pos, i - 1));
+                    }
+                    pos = i + 2;
+                }
+                break;
+            case '=':
+                if (innerFlag && 0 == nestedCount) {
+                    keyList.add(text.substring(pos, i - 1));
+                    pos = i + 2;
+                }
+                break;
+            }
+        }
+        while (!keyList.isEmpty() && !valueList.isEmpty()) {
+            String key = keyList.poll();
+            Object value = valueList.poll();
+            map.put(key, value);
+        }
+        return map;
     }
 }

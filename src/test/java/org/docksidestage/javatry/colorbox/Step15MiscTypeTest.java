@@ -15,13 +15,23 @@
  */
 package org.docksidestage.javatry.colorbox;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.docksidestage.bizfw.colorbox.ColorBox;
+import org.docksidestage.bizfw.colorbox.space.BoxSpace;
+import org.docksidestage.bizfw.colorbox.yours.YourPrivateRoom;
+import org.docksidestage.bizfw.colorbox.yours.YourPrivateRoom.BoxedPark;
+import org.docksidestage.bizfw.colorbox.yours.YourPrivateRoom.BoxedResort;
+import org.docksidestage.bizfw.colorbox.yours.YourPrivateRoom.BoxedStage;
+import org.docksidestage.bizfw.colorbox.yours.YourPrivateRoom.FavoriteProvider;
 import org.docksidestage.unit.PlainTestCase;
 
 /**
  * The test of various type with color-box. <br>
  * Show answer by log() for question of javadoc.
  * @author jflute
- * @author your_name_here
+ * @author Kasei Ou
  */
 public class Step15MiscTypeTest extends PlainTestCase {
 
@@ -33,6 +43,15 @@ public class Step15MiscTypeTest extends PlainTestCase {
      * (カラーボックスに入っているthrowできるオブジェクトのクラス名は？)
      */
     public void test_throwable() {
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof Throwable) {
+                    log(content.getClass());
+                }
+            }
+        }
     }
 
     /**
@@ -40,6 +59,16 @@ public class Step15MiscTypeTest extends PlainTestCase {
      * (カラーボックスに入っている例外オブジェクトのネストした例外インスタンスのメッセージは？)
      */
     public void test_nestedException() {
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof Exception) {
+                    Exception exception = (Exception) content;
+                    log(exception.getCause().getMessage());
+                }
+            }
+        }
     }
 
     // ===================================================================================
@@ -50,6 +79,16 @@ public class Step15MiscTypeTest extends PlainTestCase {
      * (カラーボックスに入っているFavoriteProviderインターフェースのjustHere()メソッドの戻り値は？)
      */
     public void test_interfaceCall() {
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                Object content = boxSpace.getContent();
+                if (content instanceof FavoriteProvider) {
+                    FavoriteProvider provider = (FavoriteProvider) content;
+                    log(provider.justHere());
+                }
+            }
+        }
     }
 
     // ===================================================================================
@@ -60,6 +99,34 @@ public class Step15MiscTypeTest extends PlainTestCase {
      * (beigeのカラーボックスに入っているListの中のBoxedResortのBoxedStageのkeywordは？(値がなければ固定の"none"という値を))
      */
     public void test_optionalMapping() {
+        final String targetColorString = "beige";
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        for (ColorBox colorBox : colorBoxList) {
+            if (colorBox.getColor().getColorName().equals(targetColorString)) {
+                for (BoxSpace boxSpace : colorBox.getSpaceList()) {
+                    Object content = boxSpace.getContent();
+                    if (content instanceof List) {
+                        List list = (List) content;
+                        for (Object object : list) {
+                            if (object instanceof BoxedResort) {
+                                BoxedResort boxedResort = (BoxedResort) object;
+                                Optional<BoxedPark> optBoxedPark = boxedResort.getPark();
+                                optBoxedPark.ifPresentOrElse(boxedPark -> {
+                                    Optional<BoxedStage> optBoxedStage = boxedPark.getStage();
+                                    optBoxedStage.ifPresentOrElse(boxedStage -> {
+                                        log(boxedStage.getKeyword());
+                                    }, () -> {
+                                        log("none");
+                                    });
+                                }, () -> {
+                                    log("none");
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // ===================================================================================
@@ -70,5 +137,21 @@ public class Step15MiscTypeTest extends PlainTestCase {
      * (getColorBoxList()メソッドの中のmakeEighthColorBox()メソッドを呼び出している箇所の行数は？)
      */
     public void test_lineNumber() {
+        final String targetMethodName = "getColorBoxList";
+        List<ColorBox> colorBoxList = new YourPrivateRoom().getColorBoxList();
+        ColorBox eighthBox = colorBoxList.get(7);
+        for (BoxSpace boxSpace : eighthBox.getSpaceList()) {
+            Object content = boxSpace.getContent();
+            if (content instanceof Throwable) {
+                Throwable throwable = (Throwable) content;
+                StackTraceElement[] stackTraceElements = throwable.getStackTrace();
+                for (StackTraceElement element : stackTraceElements) {
+                    if (element.getMethodName().equals(targetMethodName)) {
+                        log(element.getLineNumber());
+                        return;
+                    }
+                }
+            }
+        }
     }
 }
